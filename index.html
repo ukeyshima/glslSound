@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="main.js"></script>
+    <script id="vs" type="vertexShader.glsl">#version 300 es 
+    precision highp float;
+    uniform float iTime;
+    out float sound;
+    void main(void){
+        float id=float(gl_VertexID);
+        sound=sin(id);
+    }</script>
+    <script id="fs" type="fragmentShader.glsl">#version 300 es
+    void main(void){}</script>
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+</body>
+
+</html>
