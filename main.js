@@ -5,11 +5,15 @@ window.addEventListener("load", function () {
     c.width = cw; c.height = ch;
     const gl = c.getContext("webgl2") || c.getContext("webgl") || c.getContext("experimental-webgl");
     const prg = create_program(create_shader("vs"), create_shader("fs"));
-
+    const uniLocation=new Array();
+    uniLocation[0]=gl.getUniformLocation(prg,"iTime");    
     let audioContext = new (window.AudioContext || window.webkitAudioContext)();
     let source = audioContext.createBufferSource();
-    let sampleNum = audioContext.sampleRate;
-    (function () {
+    let sampleNum = 44100;    
+    let time=0;
+
+    const play=()=>{
+        gl.uniform1f(uniLocation[0],time);
         const vTransformFeedback = gl.createBuffer();
         const transformFeedback = gl.createTransformFeedback();
         gl.bindBuffer(gl.ARRAY_BUFFER, vTransformFeedback);
@@ -21,20 +25,22 @@ window.addEventListener("load", function () {
         gl.drawArrays(gl.POINTS, 0, sampleNum);
         gl.endTransformFeedback();
         let arrBuffer = new Float32Array(sampleNum);
-        gl.getBufferSubData(gl.TRANSFORM_FEEDBACK_BUFFER, 0, arrBuffer);
-
-        let audioBuffer = audioContext.createBuffer(2, sampleNum, sampleNum);
+        gl.getBufferSubData(gl.TRANSFORM_FEEDBACK_BUFFER, 0, arrBuffer);                         
+        let audioBuffer = audioContext.createBuffer(2, sampleNum, sampleNum);        
         for (let i = 0; i < 2; i++) {
             let bufferring = audioBuffer.getChannelData(i);
             bufferring.set(arrBuffer);
         }
         let source = audioContext.createBufferSource();
         source.buffer = audioBuffer;
-        source.connect(audioContext.destination);
-        source.loop = true;
-        source.start();
-        gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, null);        
-    })();
+        source.connect(audioContext.destination);                
+        source.start(time + 2, 0, 1);
+        gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, null); 
+        time++;
+
+    }
+    setInterval(play,1000);    
+
 
     function create_shader(id) {
         let shader;
